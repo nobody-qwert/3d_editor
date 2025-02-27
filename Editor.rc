@@ -1,0 +1,299 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MENU MENU DISCARDABLE 
+BEGIN
+    POPUP "File"
+    BEGIN
+        MENUITEM "New",                         ID_FILE_RESET
+        MENUITEM SEPARATOR
+        MENUITEM "Open",                        ID_FILE_OPEN1
+        MENUITEM "Save         F2",             ID_FILE_SAVE1
+        MENUITEM SEPARATOR
+        MENUITEM SEPARATOR
+        MENUITEM "Exit",                        ID_FILE_EXIT
+    END
+    POPUP "Edit"
+    BEGIN
+        MENUITEM "Rotate                         F5", ID_EDIT_ROTATE
+        MENUITEM "Drag Vertices               F6", ID_SELECT_DRAGVERTICES
+        MENUITEM "Scale Objects               F7", ID_EDIT_SCALEOBJECTS
+        MENUITEM SEPARATOR
+        MENUITEM "Insert Object",               ID_EDIT_INSERTOBJECT
+        MENUITEM SEPARATOR
+        MENUITEM "Duplicate Selection      INSERT", ID_EDIT_DUPLICATE
+        MENUITEM "Delete                          DEL", ID_EDIT_DELETE
+        MENUITEM SEPARATOR
+        MENUITEM "Snap To Grid",                ID_EDIT_SNAPTOGRID, CHECKED
+    END
+    POPUP "View"
+    BEGIN
+        MENUITEM "Top",                         ID_VIEW_TOP
+        MENUITEM "Front",                       ID_VIEW_FRONT
+        MENUITEM "Left",                        ID_VIEW_LEFT
+        MENUITEM SEPARATOR
+        MENUITEM "Bulbs",                       ID_VIEW_BULBS, CHECKED
+        MENUITEM "Show Lightmaps",              ID_VIEW_SHOWLIGHTMAPS
+        , CHECKED
+        MENUITEM SEPARATOR
+        MENUITEM "Vertex",                      ID_VIEW_GLPOINT
+        MENUITEM "Wireframe",                   ID_VIEW_GLLINE
+        MENUITEM "Texture",                     ID_VIEW_GLFILL, CHECKED
+    END
+    POPUP "Select"
+    BEGIN
+        MENUITEM "Select Inside          ENTER", ID_SELECT_SELECTINSIDE
+    END
+    POPUP "Textures"
+    BEGIN
+        MENUITEM "Load Category",               ID_TEXTURES_LOADFROMFILE
+        MENUITEM SEPARATOR
+        POPUP "Lock Texture"
+        BEGIN
+            MENUITEM "Rotations",                   ID_TEXTURES_LOCKTEXTURE_ROTATIONS
+
+            MENUITEM "Moves",                       ID_TEXTURES_LOCKTEXTURE_MOVES
+
+        END
+    END
+    POPUP "Create"
+    BEGIN
+        MENUITEM "Bevel",                       ID_CREATE_BEVEL
+        MENUITEM "EndCap",                      ID_CREATE_ENDCAP
+        POPUP "Caps"
+        BEGIN
+            MENUITEM "Bevel",                       ID_CREATE_CAPS_BEVEL
+            MENUITEM "Endcap",                      ID_CREATE_CAPS_ENDCAP
+            MENUITEM SEPARATOR
+            MENUITEM "Inverted Bevel",              ID_CREATE_CAPS_INVERTEDBEVEL
+
+            MENUITEM "Inverted Endcap",             ID_CREATE_CAPS_INVERTEDENDCAP
+
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "Simple Mesh",                 ID_CREATE_SIMPLEMESH
+        MENUITEM SEPARATOR
+        MENUITEM "Cone",                        ID_CREATE_CONE
+        MENUITEM "Cylinder",                    ID_CREATE_CILINDER
+        MENUITEM SEPARATOR
+        MENUITEM SEPARATOR
+        MENUITEM "Sphere",                      ID_CREATE_SPHERE
+    END
+    POPUP "Object"
+    BEGIN
+        MENUITEM "Texturing Properties...",     ID_TEXTURES_TEXTURINGPROPERTIES
+
+        MENUITEM "Smoothness...",               ID_OBJECT_SMOOTHNESS
+    END
+    POPUP "Lights"
+    BEGIN
+        MENUITEM "Insert Light",                ID_LIGHTS_INSERTLIGHT
+        MENUITEM "Modify Selected Light",       ID_LIGHTS_MODIFYSELECTEDLIGHT
+
+        MENUITEM SEPARATOR
+        MENUITEM "Generate LightMaps",          ID_LIGHTS_GENERATE_LIGHTMAPS
+    END
+END
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_TEXTURE_PROPERTIES DIALOGEX 0, 0, 177, 151
+STYLE DS_CENTERMOUSE | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "Texture Properties"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "Ok",IDC_OK1,10,130,45,15
+    PUSHBUTTON      "Cancel",IDC_CANCEL,110,130,45,15
+    LTEXT           "Transparency",IDC_STATIC,10,100,44,8
+    EDITTEXT        IDC_T,66,100,50,15,ES_AUTOHSCROLL
+    LTEXT           "Horizontal Shift",IDC_STATIC,20,15,48,8
+    LTEXT           "Vertical Shift",IDC_STATIC,20,34,40,8
+    EDITTEXT        IDC_HS,80,15,50,15,ES_AUTOHSCROLL
+    EDITTEXT        IDC_VS,80,34,50,15,ES_AUTOHSCROLL
+    EDITTEXT        IDC_W,80,55,50,15,ES_AUTOHSCROLL
+    EDITTEXT        IDC_H,80,74,50,15,ES_AUTOHSCROLL
+    LTEXT           "Width",IDC_STATIC,20,55,20,8
+    LTEXT           "Height",IDC_STATIC,20,74,22,8
+    GROUPBOX        "",IDC_STATIC,10,5,140,90
+    CONTROL         "Billboard",IDC_BILLBOARD,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,125,105,43,10
+END
+
+IDD_SMOOTHNESS DIALOGEX 0, 0, 162, 76
+STYLE DS_CENTERMOUSE | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOOLWINDOW
+FONT 8, "MS Sans Serif"
+BEGIN
+    SCROLLBAR       IDC_SCROLL,11,29,140,11
+    CONTROL         "Smoothness",IDC_STATIC,"Static",SS_SIMPLE | WS_GROUP,12,
+                    9,40,8
+    CTEXT           "",IDC_ST,61,9,44,13,SS_SUNKEN
+    DEFPUSHBUTTON   "Ok",IDC_OK,15,55,43,14
+    PUSHBUTTON      "Cancel",IDC_CANCEL,90,55,43,14
+END
+
+IDD_LIGHT_PROPERTIES DIALOGEX 0, 0, 240, 186
+STYLE DS_CENTERMOUSE | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "Light Source Properties"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_RED,44,16,60,15,ES_AUTOHSCROLL
+    EDITTEXT        IDC_GREEN,44,36,60,15,ES_AUTOHSCROLL
+    EDITTEXT        IDC_BLUE,44,56,60,15,ES_AUTOHSCROLL
+    EDITTEXT        IDC_X,160,15,60,15,ES_AUTOHSCROLL
+    EDITTEXT        IDC_Y,160,35,60,15,ES_AUTOHSCROLL
+    GROUPBOX        "Color",IDC_STATIC,7,7,105,70
+    LTEXT           "Red",IDC_STATIC,14,21,16,8
+    LTEXT           "Green",IDC_STATIC,14,41,20,8
+    LTEXT           "Blue",IDC_STATIC,14,61,15,8
+    EDITTEXT        IDC_Z,160,55,60,15,ES_AUTOHSCROLL
+    LTEXT           "X:",IDC_STATIC,135,20,8,8
+    LTEXT           "Y:",IDC_STATIC,135,40,8,8
+    LTEXT           "Z:",IDC_STATIC,135,60,8,8
+    GROUPBOX        "Position",IDC_STATIC,125,6,105,70
+    EDITTEXT        IDC_R,131,90,60,15,ES_AUTOHSCROLL
+    EDITTEXT        IDC_B,131,107,60,15,ES_AUTOHSCROLL
+    EDITTEXT        IDC_C,131,125,60,15,ES_AUTOHSCROLL
+    LTEXT           "Brightness: (0..1)",IDC_STATIC,55,112,54,8
+    LTEXT           "Cutoff: (0..1)",IDC_STATIC,55,130,40,8
+    LTEXT           "Range:",IDC_STATIC,55,95,24,8
+    DEFPUSHBUTTON   "Ok",IDC_OK,35,165,50,15
+    PUSHBUTTON      "Cancel",IDC_CANCEL,140,165,50,15
+END
+
+IDD_LOAD_CATALOG DIALOGEX 0, 0, 242, 136
+STYLE DS_CENTERMOUSE | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "Load Catalog"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "Load",IDC_OK,10,110,40,14
+    LISTBOX         IDC_LIST,5,5,230,95,LBS_SORT | LBS_NOINTEGRALHEIGHT | 
+                    LBS_MULTICOLUMN | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Cancel",IDC_CANCEL,70,110,40,14
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_TEXTURE_PROPERTIES, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 170
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 144
+    END
+
+    IDD_SMOOTHNESS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 155
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 69
+    END
+
+    IDD_LIGHT_PROPERTIES, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 233
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 179
+    END
+
+    IDD_LOAD_CATALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 235
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 129
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_3DW                 ICON    DISCARDABLE     "icon1.ico"
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
