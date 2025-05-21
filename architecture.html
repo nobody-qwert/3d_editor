@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3D Model Editor - Architecture</title>
-    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.js"></script>
 </head>
 <body>
     <h1>3D Model Editor - Architecture</h1>
@@ -146,12 +145,17 @@ sequenceDiagram
     </pre>
 
     <script type="module">
-     import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.js';
-     document.addEventListener('DOMContentLoaded', function () {
-       mermaid.initialize({ startOnLoad: true });
-       // If diagrams still don't render, an explicit mermaid.run() call might be needed here.
-       // For example: mermaid.run({ nodes: document.querySelectorAll('.mermaid') });
-     });
-   </script>
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.js';
+      document.addEventListener('DOMContentLoaded', function () {
+        mermaid.initialize({
+          startOnLoad: false, // Set to false as we will call run() explicitly
+          // theme: 'default', // Optional: specify a theme
+          // securityLevel: 'loose' // Optional: if you have complex diagrams or need more flexibility
+        });
+        mermaid.run({
+          nodes: document.querySelectorAll('.mermaid') // Process all elements with class="mermaid"
+        });
+      });
+    </script>
 </body>
 </html>
