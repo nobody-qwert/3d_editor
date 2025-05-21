@@ -185,6 +185,7 @@ BRUSH SHAPE::GetBBoxO(bool autocorrect) {
 	bbox.end[_Y] = p[0].y;
 	bbox.end[_Z] = p[0].z;
 
+	int i = 0;
 	for (int i=0; i<NUM_CONTROLS[type]; i++) {
 		if (p[i].x<bbox.start[_X]) bbox.start[_X] = p[i].x;
 		if (p[i].y<bbox.start[_Y]) bbox.start[_Y] = p[i].y;
@@ -226,7 +227,7 @@ BRUSH SHAPE::GetBBoxN(bool autocorrect) {
 	bbox.end[_X] = p[0].x;
 	bbox.end[_Y] = p[0].y;
 	bbox.end[_Z] = p[0].z;
-
+	int i = 0;
 	for (int i=0; i<NUM_CONTROLS[type]; i++) {
 		if (p[i].x<bbox.start[_X]) bbox.start[_X] = p[i].x;
 		if (p[i].y<bbox.start[_Y]) bbox.start[_Y] = p[i].y;
@@ -272,7 +273,8 @@ void SPHERE::GenerateShape() {
 
 	numpoints = numtriangles = 0;
 
-	for (int ii = 0; ii<=smoothness; ii++) {
+	int ii = 0;
+	for (ii = 0; ii<=smoothness; ii++) {
 		for (int jj=0; jj<=smoothness; jj++) {
 	
 			x=0; y=1; z=0;
@@ -340,121 +342,7 @@ SPHERE::SPHERE() {
 
 /******************************NURB CLASS*********************************************/
 
-
-CVector3 NURB::Bezier(CVector3 p1, CVector3 p2, CVector3 p3, float t) {
-	float  c = (1-t);
-
-	CVector3 pointOnCurve;
-
-	pointOnCurve.x = (p1.x*c*c) + (p2.x*2*t*c) + (p3.x*t*t);
-	pointOnCurve.y = (p1.y*c*c) + (p2.y*2*t*c) + (p3.y*t*t);
-	pointOnCurve.z = (p1.z*c*c) + (p2.z*2*t*c) + (p3.z*t*t);
-
-	return pointOnCurve;
-}
-
-
-void NURB::GenerateShape() {
-	if (!initialized) {
-		tbuff  = new Triangle[2*smoothness*smoothness];
-		vbuff3 = new CVector3[(smoothness+1)*(smoothness+1)];
-		vbuff2 = new CVector2[(smoothness+1)*(smoothness+1)];
-		initialized = true;
-	}
-
-	CVector3	startPoint, 
-				controlPoint,
-				endPoint;
-	CVector3	p1, p2, p3, p4;
-	float		tv,	th;
-
-	numpoints = 0;
-	numtriangles = 0;
-	
-	for(int vv=0; vv<=smoothness; vv++)
-		for (int hh=0; hh<=smoothness; hh++) {
-			th = hh*1.0/smoothness;
-			tv = vv*1.0/smoothness;
-
-			startPoint	= Bezier(p[0], p[3], p[6], tv);
-			controlPoint= Bezier(p[1], p[4], p[7], tv);
-			endPoint	= Bezier(p[2], p[5], p[8], tv);
-
-			vbuff3[numpoints] = Bezier(startPoint, controlPoint, endPoint, th);
-			vbuff2[numpoints] = CVector2(th,tv);
-			numpoints++;			
-		}
-
-	for (int i=0; i<smoothness; i++) 
-		for (int j=0; j<smoothness; j++) {
-			tbuff[numtriangles] = GetTrianglePoints(i*(smoothness+1)+j, true);
-			numtriangles++;
-			tbuff[numtriangles] = GetTrianglePoints(i*(smoothness+1)+j, false);
-			numtriangles++;
-		}
-}
-
-
-Triangle NURB::GetTrianglePoints(int PointIDX, bool TriangleIDX) {
-	Triangle t;
-
-	if (TriangleIDX) {
-		t.p1 = PointIDX;
-		t.p2 = PointIDX + smoothness + 1;
-		t.p3 = PointIDX + smoothness + 2;		
-	} else {
-		t.p1 = PointIDX;
-		t.p2 = PointIDX + smoothness + 2;
-		t.p3 = PointIDX + 1;
-	}
-
-	return t;
-}
-
-
-//---------------------------------------------
-//void NURB::Init(CVector3 *point, int sm)
-//
-// - has to be initialized with 9 control points 
-//		6---7---8
-//		|	|	|
-//      3	4	5  
-//		|	|	|
-//      0---1---2
-// endpoints: 0,2,6,8
-// curve controls: 1,3,4,5,7
-//---------------------------------------------
-void NURB::Init(CVector3 *point, int sm) {
-	if (point==NULL) return;	
-
-	smoothness	= sm<3 ? 3:sm;	
-
-	if (p==NULL) p=new CVector3[NUM_CONTROLS[type]];
-
-	tbuff  = new Triangle[2*smoothness*smoothness];
-	vbuff3 = new CVector3[(smoothness+1)*(smoothness+1)];
-	vbuff2 = new CVector2[(smoothness+1)*(smoothness+1)];
-	initialized = true;
-
-	memcpy(p, point, NUM_CONTROLS[type]*sizeof(CVector3));	
-}
-
-
-
-NURB::NURB() {
-	type = ST_NURB;
-
-	numpoints = 0;
-	numtriangles = 0;
-	smoothness = 3;
-	
-	vbuff3 = NULL;
-	vbuff2 = NULL;
-	tbuff = NULL;
-	initialized = false;
-
-	p = new CVector3[NUM_CONTROLS[type]];
-}
+// NURB class implementation moved to nurb.cpp to avoid duplicate symbols
 
 
 /******************************BOX CLASS*********************************************/
@@ -864,7 +752,8 @@ void NCONE::GenerateShape() {
 		ptr3 = slice[i].GetVertexList();
 		ptrt = slice[i].GetTriangleList();
 
-		for (int jj=0; jj<slice[i].GetNumTriangles(); jj++) {
+		int jj=0;
+		for (jj=0; jj<slice[i].GetNumTriangles(); jj++) {
 			tbuff[numtriangles].p1 = ptrt[jj].p1 + numpoints;
 			tbuff[numtriangles].p2 = ptrt[jj].p2 + numpoints;
 			tbuff[numtriangles].p3 = ptrt[jj].p3 + numpoints;
@@ -1010,7 +899,8 @@ void NCILINDER::GenerateShape() {
 		ptr3 = slice[i].GetVertexList();
 		ptrt = slice[i].GetTriangleList();
 
-		for (int jj=0; jj<slice[i].GetNumTriangles(); jj++) {
+		int jj = 0;
+		for (jj=0; jj<slice[i].GetNumTriangles(); jj++) {
 			tbuff[numtriangles].p1 = ptrt[jj].p1 + numpoints;
 			tbuff[numtriangles].p2 = ptrt[jj].p2 + numpoints;
 			tbuff[numtriangles].p3 = ptrt[jj].p3 + numpoints;
@@ -1134,7 +1024,7 @@ void ENDCAP::GenerateShape() {
 			numtriangles++;
 		}
 
-		for (jj=0; jj<slice[i].GetNumPoints(); jj++) {
+		for (int jj=0; jj<slice[i].GetNumPoints(); jj++) {
 			ptr2[jj].x = i*0.5f - ptr2[jj].x * 0.5f;
 			vbuff2[numpoints] = ptr2[jj];
 			vbuff3[numpoints] = ptr3[jj];
@@ -1293,7 +1183,7 @@ void BEZIERMESH::GenerateShape(bool inverted) {
 	vbuff2[numpoints] = CVector2(0,1);
 	numpoints++;
 
-	for (i=0; i<smoothness; i++) {
+	for (int i=0; i<smoothness; i++) {
 		tbuff[numtriangles].p1 = i;
 		tbuff[numtriangles].p2 = i+1;
 		tbuff[numtriangles].p3 = numpoints-1;

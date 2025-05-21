@@ -1,3 +1,11 @@
+// Force ANSI strings instead of Unicode
+#ifdef UNICODE
+#undef UNICODE
+#endif
+#ifdef _UNICODE
+#undef _UNICODE
+#endif
+
 #include "editor.h"
 
 
@@ -41,11 +49,12 @@ UINT OBJECT::GetGLTexID() {
 }
 
 void OBJECT::Drag(CVector3 v) {
+	int i;
 	for (int i=0; i<NUM_CONTROLS[type]; i++) {
 		p[i]=p[i]+v;
 	}
 	
-	for (i=0; i<numpoints; i++) {
+	for (int i=0; i<numpoints; i++) {
 		vbuff3[i]=vbuff3[i]+v;
 	}
 
@@ -273,7 +282,7 @@ void EDITOR::SelectInside() {
 		}		
 	}
 
-	for (i=0; i<numbulbs; i++) {
+	for (int i=0; i<numbulbs; i++) {
 		if (IsPointInBox2D(bulb[i].pos, tmpbrush)) {
 			bulb_sel[numbulbsel] = i;
 			numbulbsel++;
@@ -860,7 +869,7 @@ void EDITOR::Update() {
 
 						(*point) = (*point) - CVector3(t[_X]-v[_X],t[_Y]-v[_Y],t[_Z]-v[_Z]);
 					}
-					for (i=0; i<numbrushes; i++) {
+					for (int i=0; i<numbrushes; i++) {
 						Recalc(object[brush[i].object]);
 						tmp_idx = brush[i].object;
 						brush[i] = object[brush[i].object].GetBBoxO();
@@ -948,7 +957,7 @@ void EDITOR::Update() {
 					RotatePoint(point, ROTATION_FACTOR*(t-v), gpoint);
 				}
 
-				for (i=0; i<numbrushes; i++) {
+				for (int i=0; i<numbrushes; i++) {
 					Recalc(object[brush[i].object]);
 					tmp_idx = brush[i].object;
 					brush[i] = object[brush[i].object].GetBBoxO();
@@ -1123,7 +1132,7 @@ void EDITOR::RotateObject(OBJECT &obj, float deg, CVector3 centrum) {
 	vbuff = obj.GetControlPointList();
 	num = obj.GetNumControlPoints();
 
-	for (i=0; i<num; i++) {
+	for (int i=0; i<num; i++) {
 		p[_X] = vbuff[i].x - centrum.x;
 		p[_Y] = vbuff[i].y - centrum.y;
 		p[_Z] = vbuff[i].z - centrum.z;
@@ -1291,11 +1300,11 @@ bool EDITOR::InitWindows() {
 	cwc[LOGWINDOW].lpfnWndProc			= (WNDPROC)WndProc;
 
 	// NUM_CHILD_WINDOWS-1 because the last window already has a predefined class
-	for (i=0; i<NUM_CHILD_WINDOWS-1; i++) {
+	for (int i=0; i<NUM_CHILD_WINDOWS-1; i++) {
 		RegisterClassEx(&cwc[i]);
 	}
 
-	for (i=0; i<NUM_CHILD_WINDOWS; i++)
+	for (int i=0; i<NUM_CHILD_WINDOWS; i++)
 	{
 		chWnd[i] = CreateWindowEx(WS_EX_OVERLAPPEDWINDOW,
 								  className[i],
@@ -1454,7 +1463,7 @@ void EDITOR::ScaleBrush(BRUSH &br, OBJECT &obj, float coef) {
 	numpoints = obj.GetNumControlPoints();
 	vbuff = obj.GetControlPointList();
 
-	for (i=0; i<numpoints; i++)
+	for (int i=0; i<numpoints; i++)
 		vbuff[i] = gpoint + (vbuff[i] - gpoint) * coef;
 
 	if (!locktexmove) obj.FitTexture();
@@ -1480,7 +1489,7 @@ void EDITOR::FitToBrush(OBJECT &obj, BRUSH br, BRUSH ob) {
 	numpoints = obj.GetNumControlPoints();
 	vbuff = obj.GetControlPointList();
 
-	for (i=0; i<numpoints; i++) {
+	for (int i=0; i<numpoints; i++) {
 		if (fabs(ob.end[_X]-ob.start[_X])>NEAR_ZERO)
 			vbuff[i].x = br.start[_X] + (br.end[_X]-br.start[_X])*(vbuff[i].x-ob.start[_X])/(ob.end[_X]-ob.start[_X]);
 		if (fabs(ob.end[_Y]-ob.start[_Y])>NEAR_ZERO)
@@ -1841,7 +1850,7 @@ void EDITOR::AppendObject(char *filename) {
 		numobjects++;
 	}
 
-	for (i=0; i<fheader.numlights; i++)
+	for (int i=0; i<fheader.numlights; i++)
 		fread(&bulb[i], sizeof(_3DW_LIGHT), 1, f);
 
 	_3DW_TEXTURE	fimage;
@@ -1850,7 +1859,7 @@ void EDITOR::AppendObject(char *filename) {
 
 	glwindow.MakeCurrent(MODELLWINDOW);
 
-	for (i=0; i<fheader.numtextures; i++) {
+	for (int i=0; i<fheader.numtextures; i++) {
 		fread(&fimage, sizeof(_3DW_TEXTURE), 1, f);
 
 		fread(fname, sizeof(char), fimage.namesize, f);
@@ -1923,7 +1932,7 @@ void EDITOR::LoadFile(char *filename) {
 
 	glwindow.MakeCurrent(MODELLWINDOW);
 
-	for (i=0; i<fheader.numtextures; i++) {
+	for (int i=0; i<fheader.numtextures; i++) {
 		fread(&fimage, sizeof(_3DW_TEXTURE), 1, f);
 
 		fread(fname, sizeof(char), fimage.namesize, f);
@@ -1973,7 +1982,7 @@ void EDITOR::SaveFile(char *filename) {
 
 			if (found==NONE) {
 				if (strlen(object[i].GetPTextureInfo()->fname[0])) {
-					strcpy(texture_names[jj], object[i].GetPTextureInfo()->fname[0]);
+					strcpy(texture_names[num_tnames], object[i].GetPTextureInfo()->fname[0]);
 					texture_idx[i] = num_tnames;
 					num_tnames++;
 				}
@@ -1997,7 +2006,7 @@ void EDITOR::SaveFile(char *filename) {
 	_3DW_OBJECT	fobject;
 
 	
-	for (i=0; i<fheader.numobjects; i++) {
+	for (int i=0; i<fheader.numobjects; i++) {
 		fobject.smoothness = object[i].GetSmoothness();
 		fobject.texture_index = texture_idx[i];
 		fobject.type = object[i].GetType();
@@ -2015,7 +2024,7 @@ void EDITOR::SaveFile(char *filename) {
 
 	_3DW_TEXTURE	fimage;
 	
-	for (i=0; i<num_tnames; i++) {
+	for (int i=0; i<num_tnames; i++) {
 		fimage.namesize = strlen(texture_names[i])+1;
 		fwrite(&fimage, sizeof(_3DW_TEXTURE), 1, f);
 
@@ -2211,7 +2220,8 @@ void EDITOR::DeleteSelectedObject() {
 	int idx[MAX_BRUSHES];
 
 	////////////////////////////////////////////
-	for (int i=0; i<numbrushes; i++) 
+	int i =0;
+	for (i=0; i<numbrushes; i++) 
 		idx[i] = brush[i].object;
 
 	SORT s;
@@ -2717,14 +2727,14 @@ void EDITOR::DrawAxes(bool is2D)
 	glColor3f(0, 0, 0);
 
 	if (is2D) {
-		for (i = -X; i<=X; i+=majorgridsize) {
+		for (int i = -X; i<=X; i+=majorgridsize) {
 			x = width/2 + i + (int)cx % majorgridsize;
 			y = 0;
 			font.glPrint(x+3, y, "%2.0f", (i - ((int)(cx)/majorgridsize)*majorgridsize) / scalemap);
 		}
 	}
 
-	for (i = -Y; i<=Y; i+=majorgridsize) {
+	for (int i = -Y; i<=Y; i+=majorgridsize) {
 		x = GL_FONT_HEIGHT/3;
 		y = height/2 + i + (int)cy % majorgridsize;
 		font.glPrint(x, y - GL_FONT_HEIGHT-3, "%2.0f",-(i - ((int)(cy)/majorgridsize)*majorgridsize) / scalemap);
@@ -2960,7 +2970,7 @@ void EDITOR::DrawProjection()
 	glColor3f(1,0,0);
 	DrawObject2D(tmpobject);
 
-	for (i=0; i<numobjects; i++) {
+	for (int i=0; i<numobjects; i++) {
 
 		glColor3f(0,0,0);
 
@@ -2973,7 +2983,7 @@ void EDITOR::DrawProjection()
 		DrawObject2D(object[i]);
 	}
 	
-	for (i=0; i<numbulbs; i++) {
+	for (int i=0; i<numbulbs; i++) {
 		glColor3f(0,1,0);
 		for (int k=0; k<numbulbsel; k++)
 			if (bulb_sel[k] == i) { 
@@ -3019,7 +3029,8 @@ void EDITOR::DrawOneD()
 	
 	DrawSelectionMark(tmpobject, tmpbrush, false);
 
-	for (int i=0; i<numbrushes; i++)
+	int i=0;
+	for (i=0; i<numbrushes; i++)
 		DrawSelectionMark(object[brush[i].object], brush[i], false);
 
 	for (i=0; i<numbulbsel;i++)	{
@@ -3132,9 +3143,7 @@ void EDITOR::DrawModell()
 
 	glEnable(GL_DEPTH_TEST);
 		
-	int i;
-		
-	for (i=0; i<numobjects; i++) {
+	for (int i=0; i<numobjects; i++) {
 		if (object[i].GetPTextureInfo()->transparency==0) {
 			glColor3f(1,1,1);
 		
@@ -3156,12 +3165,12 @@ void EDITOR::DrawModell()
 	}
 
 	if (showbulbs)
-	for (i=0; i<numbulbs; i++) DrawBulb(bulb[i]);
+	for (int i=0; i<numbulbs; i++) DrawBulb(bulb[i]);
 
 	
 	////////////////////////////////////////////////////
 
-	for (i=0; i<numobjects; i++) {
+	for (int i=0; i<numobjects; i++) {
 		if (object[i].GetPTextureInfo()->transparency>0) {
 
 			glColor3f(1,1,1);
@@ -3287,7 +3296,7 @@ void EDITOR::GenerateLightMap(int IDX_o, int IDX_t) {
 
 
 	// clamp the UV coordonates into [0..1]
-	for (i=0; i<3; i++)
+	for (int i=0; i<3; i++)
 	{		
 		lightmap[i].x -= Min_U;
 		lightmap[i].y -= Min_V;
@@ -3353,7 +3362,7 @@ void EDITOR::GenerateLightMap(int IDX_o, int IDX_t) {
 
 	// calculating light factors in each region of the
 	// LW x LH sized map
-	for (i=0; i<LW; i++)
+	for (int i=0; i<LW; i++)
 	for (int j=0; j<LH; j++)
 	{
 		

@@ -1,21 +1,19 @@
 #ifndef __GLUTILS_H
 #define __GLUTILS_H
 
+// Include compatibility header first
+#include "compat.h"
 
-#include "windows.h"
-#include "gl\gl.h"
-#include "gl\glu.h"
-#include "gl\glaux.h"
-#include "stdio.h"
+#include <windows.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
+// glaux.h is handled by compat.h
+#include <stdio.h>
 #include "3dmath.h"
-
-
 
 #ifndef byte	
 	typedef unsigned char byte;
 #endif
-
-
 
 class CAMERA {
 	private:
@@ -35,7 +33,6 @@ class CAMERA {
 		void TurnTo(float hor, float ver);
 		void Apply();
 };
-
 
 #define MAX_CHARS	256
 
@@ -57,8 +54,6 @@ public:
 	void	DestroyFont();
 };
 
-
-
 class SORT {
 	private:
 		int *tmp;
@@ -68,7 +63,6 @@ class SORT {
 		void StartSort(int *x, int n);
 };
 
-
 /*************************************************************************
 							FUNCTIONS
  *************************************************************************/
@@ -77,6 +71,5 @@ extern AUX_RGBImageRec * LoadBMP(char *Filename);
 extern bool LoadToOpenGL(char * fname, GLuint &ID, GLuint min, GLuint max);
 extern void OrthoMode(int left, int top, int right, int bottom);
 extern void PerspectiveMode();
-
 
 #endif

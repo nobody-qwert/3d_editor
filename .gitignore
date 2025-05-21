@@ -1,0 +1,46 @@
+# Build directories
+build*/
+out/
+bin/
+lib/
+
+# CMake generated files
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+*.cmake
+
+# Visual Studio files
+.vs/
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.suo
+*.user
+*.userosscache
+*.sdf
+*.opensdf
+*.VC.db
+*.VC.opendb
+ipch/
+Debug/
+Release/
+x64/
+x86/
+
+# MinGW generated files
+*.o
+*.a
+*.exe
+*.dll
+
+# Editor backup files
+*~
+*.bak
+*.swp
+
+# Other
+.DS_Store
+Thumbs.db

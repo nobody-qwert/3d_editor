@@ -19,7 +19,7 @@ CVector3 NURB::Bezier(CVector3 p1, CVector3 p2, CVector3 p3, float t) {
 }
 
 
-void NURB::GenerateNURB(bool endcap, int smoothness) {
+void NURB::GenerateShape() {
 
 	CVector3	startPoint, 
 				controlPoint,
@@ -81,8 +81,9 @@ Triangle NURB::GetTrianglePoints(int PointIDX, bool TriangleIDX) {
 }
 
 
-void NURB::Init(CVector3 *point) {
+void NURB::Init(CVector3 *point, int sm) {
 	if (point==NULL) return;	
+	smoothness = sm<3 ? 3:sm;
 	memcpy(p, point, NUM_CONTROL_POINTS*sizeof(CVector3));
 }
 
@@ -97,10 +98,3 @@ NURB::NURB() {
 	vbuff2 = NULL;
 	tbuff = NULL;
 }
-
-
-
-
-
-
-

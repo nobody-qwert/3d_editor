@@ -8,9 +8,8 @@
 
 
 
-typedef struct Triangle {
-	int p1, p2, p3;
-} *TRIANGLE;
+// Use the Triangle struct from 3dmath.h
+typedef TRIANGLE* PTRIANGLE;
 
 
 
@@ -25,16 +24,16 @@ class NURB {
 
 		CVector3* vbuff3;
 		CVector2* vbuff2;
-		TRIANGLE tbuff;
+		PTRIANGLE tbuff;
 		int numpoints;
 		int numtriangles;
 		int smoothness;
 
 					NURB();		
-		void		Init(CVector3 *controlPoints);
+		void		Init(CVector3 *controlPoints, int smoothness);
 		Triangle	GetTrianglePoints(int PointIDX, bool TriangleIDX);
 		CVector3	Bezier(CVector3 p1, CVector3 p2, CVector3 p3, float t);
-		void		GenerateNURB(bool endcap, int smoothness);
+		void		GenerateShape();
 };
 
 
