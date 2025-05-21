@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Model Editor - Architecture</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.js"></script>
+</head>
+<body>
+    <h1>3D Model Editor - Architecture</h1>
+
+    <h2>Overview</h2>
+    <p>This application is a 3D model editor developed in C++. It provides tools for users to create, view, and manipulate 3D geometric objects and scenes. The editor supports various shape primitives, texture mapping, lighting, and different camera perspectives to facilitate 3D modeling tasks.</p>
+
+    <h2>Core Editor</h2>
+    <p>The Core Editor (`editor.h`, `editor.cpp`) is the central nervous system of the application. It orchestrates the overall functionality, managing the lifecycle of 3D objects, light sources, and textures. It's responsible for handling user input, translating actions into commands for object manipulation (like creation, modification, rotation, scaling), and managing different editor states or modes (e.g., 'Modify Objects', 'Select Controls'). The Core Editor also controls the various view perspectives (Top, Front, Left) and updates the different display windows based on changes to the scene or user interactions.</p>
+    <h3>Key Responsibilities:</h3>
+    <ul>
+        <li>Object Management (creation, deletion, modification of `OBJECT` instances)</li>
+        <li>Light Management (placement and properties of `BULB` light sources)</li>
+        <li>Texture Coordination (works with TextureManager to apply textures)</li>
+        <li>User Input Processing (handles mouse and keyboard events for scene interaction)</li>
+        <li>State Management (controls various design statuses like `DS_MODIFY_OBJECTS`, `DS_ROTATE_OBJECTS`)</li>
+        <li>View Control (manages camera, projection, and different view modes like `LEFT`, `TOP`, `FRONT`)</li>
+        <li>Scene Updates (triggers redraws in different windows)</li>
+    </ul>
+    <h3>Component Interactions:</h3>
+    <pre class="mermaid">
+graph TD
+    User_Input --> Core_Editor;
+    Core_Editor --> Windowing_System[Windowing System];
+    Core_Editor --> OpenGL_Rendering[OpenGL Rendering];
+    Core_Editor --> Object_Management[Object Management (Shapes)];
+    Core_Editor --> Texture_Management[Texture Management];
+    Core_Editor --> Light_Management;
+    Object_Management --> Shapes_Component[Shapes Component];
+    </pre>
+    <h2>Windowing System</h2>
+    <p>The Windowing System (`windowsistem.h`, `windowsistem.cpp`) is built upon the Windows API and is responsible for creating, managing, and coordinating all user interface windows within the application. This includes the main application frame and several specialized child windows that provide different views and controls for the 3D editing environment.</p>
+    <h3>Key Child Windows:</h3>
+    <ul>
+        <li><strong>Projection Window:</strong> Displays a 2D projection of the 3D scene (e.g., top, front, or side views). Used for precise object placement and alignment.</li>
+        <li><strong>Model Window:</strong> Provides a 3D perspective view of the scene, allowing users to inspect the model from various angles.</li>
+        <li><strong>Texture Window:</strong> Displays available textures and allows users to select and manage them for application to objects.</li>
+        <li><strong>1D Window:</strong> Likely used for editing specific single-dimension properties or attributes of objects or controls, possibly related to NURBS or other parametric definitions.</li>
+        <li><strong>Log Window:</strong> Outputs messages, errors, or status information from the application.</li>
+    </ul>
+    <h3>Window Hierarchy:</h3>
+    <pre class="mermaid">
+graph TD
+    Main_App_Window[Main Application Window] --> PW[Projection Window];
+    Main_App_Window --> MW[Model Window];
+    Main_App_Window --> TW[Texture Window];
+    Main_App_Window --> OW[1D Window];
+    Main_App_Window --> LW[Log Window];
+    </pre>
+    <h2>OpenGL Rendering</h2>
+    <p>The OpenGL Rendering component (`glwindow.h`, `glwindow.cpp`, `glutils.h`, `glutils.cpp`) is crucial for all visual output. It encapsulates the complexities of interfacing with OpenGL, the industry-standard graphics API. Its primary responsibilities include initializing the OpenGL state, setting up pixel formats, creating rendering contexts for each window that displays graphics, and managing the rendering pipeline. It handles drawing all visual elements, including 3D objects, grid lines, selection highlights, UI elements like axes, and textured surfaces. It also manages OpenGL extensions and ensures compatibility.</p>
+    <h3>Key Functions:</h3>
+    <ul>
+        <li>OpenGL Initialization (setting up contexts, pixel formats, extensions)</li>
+        <li>Viewport Management (for each child window like Projection, Model)</li>
+        <li>Scene Rendering (drawing 3D objects, lights, textures)</li>
+        <li>UI Element Rendering (drawing grids, axes, selection indicators, fonts)</li>
+        <li>Buffer Swapping (displaying the rendered image)</li>
+        <li>Fullscreen Mode Management</li>
+        <li>Font Rendering for UI text</li>
+    </ul>
+    <h3>Interaction with Editor:</h3>
+    <p>The Core Editor directs the OpenGL Rendering component on what to draw and how. For instance, when an object is moved or the camera view changes, the Core Editor updates the relevant data and then instructs the OpenGL component to re-render the scene in the appropriate windows (Projection, Model, etc.) to reflect these changes.</p>
+    <h2>Shapes</h2>
+    <p>The Shapes component (`shapes.h`, `shapes.cpp`) defines the geometric primitives available within the 3D editor. It provides a base `SHAPE` class and a variety of derived classes for specific geometric forms. Each shape class encapsulates properties like control points, smoothness, orientation, bounding boxes, and methods for generating its vertex data and triangle mesh for rendering. This component is fundamental for creating the actual 3D objects that users interact with.</p>
+    <h3>Key Features:</h3>
+    <ul>
+        <li>Base `SHAPE` class with common properties (vertices, triangles, smoothness, texture coordinates, bounding box).</li>
+        <li>Derived classes for specific geometries: `NURB`, `BEZIERMESH`, `BOX`, `SPHERE`, `NCONE`, `NCILINDER`, `NPLANE`, `BEVEL`, `ENDCAP`, etc.</li>
+        <li>Methods for procedural generation of shape geometry (`GenerateShape()`).</li>
+        <li>Management of control points for parametric shapes.</li>
+        <li>Calculation of texture coordinates and bounding boxes.</li>
+    </ul>
+    <h3>Class Hierarchy Example:</h3>
+    <pre class="mermaid">
+classDiagram
+    SHAPE <|-- NURB
+    SHAPE <|-- BOX
+    SHAPE <|-- SPHERE
+    SHAPE <|-- BEZIERMESH
+    SHAPE : +GetBBox()
+    SHAPE : +GetType()
+    SHAPE : +GetSmoothness()
+    SHAPE : +GenerateShape()*
+    SHAPE : #p : CVector3*
+    SHAPE : #vbuff3 : CVector3*
+    SHAPE : #tbuff : Triangle*
+    NURB : +Bezier()
+    BOX : +Init(CVector3, CVector3)
+    SPHERE : +Init(CVector3, CVector3, int)
+    BEZIERMESH : +Bezier3()
+    </pre>
+    <h2>Texture Management</h2>
+    <p>The Texture Management component (`texturemanager.h`, `texturemanager.cpp`) is responsible for handling all aspects of textures applied to 3D objects. This includes loading image files (primarily JPEGs), preparing them for use in OpenGL, and managing their storage and application to shapes. It ensures that textures are correctly mapped and rendered onto the surfaces of 3D models.</p>
+    <h3>Key Functionalities:</h3>
+    <ul>
+        <li>Loading texture images from files (e.g., `LoadJPG`).</li>
+        <li>Decoding image formats (specifically `DecodeJPG` for JPEGs).</li>
+        <li>Creating and managing OpenGL texture objects (`AddToOpenGL`, `CreateTexture`).</li>
+        <li>Storing texture information (filename, dimensions, OpenGL ID in `TEXTURELIST`).</li>
+        <li>Applying textures to objects, including managing texture coordinates and properties like filtering (minification/magnification).</li>
+        <li>Handling texture properties like billboarding and transparency via `TEXTUREINFO`.</li>
+    </ul>
+    <h3>Workflow:</h3>
+    <p>Typically, the user selects an image file through the UI. The Texture Manager loads this file, decodes it, and creates an OpenGL texture. This texture is then associated with an object or material. When the object is rendered, the OpenGL Rendering component uses this texture information, along with the object's texture coordinates (often generated by the Shapes component), to apply the image to the object's surface.</p>
+    <h2>NURBS</h2>
+    <p>The NURBS component (`nurb.h`, `nurb.cpp`) provides specialized functionality for Non-Uniform Rational B-Splines. NURBS are a mathematical representation used for creating smooth, complex curves and surfaces. This component contains the logic to define NURBS entities based on control points and to tessellate them into triangles for rendering by the OpenGL system. While `shapes.h` also defines a `NURB` class that inherits from `SHAPE`, `nurb.h` might contain more fundamental or shared NURBS calculations or a distinct, possibly earlier, implementation.</p>
+    <h3>Key Aspects:</h3>
+    <ul>
+        <li>Definition of NURBS curves/surfaces using control points.</li>
+        <li>Bezier curve calculation (`Bezier()` method) as a common basis for NURBS.</li>
+        <li>Generation of triangle meshes (`GenerateNURB()`) from the mathematical description for rendering.</li>
+        <li>Management of smoothness parameters for tessellation.</li>
+    </ul>
+    <h2>3D Math</h2>
+    <p>The 3D Math component (`3Dmath.h`, `3Dmath.cpp`) provides essential mathematical utilities for 3D graphics operations. This typically includes classes and functions for vector operations (like dot product, cross product, normalization), matrix operations (like transformation, rotation, scaling, projection), and possibly other geometric calculations necessary for manipulating and rendering 3D objects and camera views.</p>
+    <h2>Logging</h2>
+    <p>The Logging component (`log.h`, `log.cpp`) offers a simple mechanism for recording application events, status messages, warnings, or errors. The `g_editor.PrintLog()` function, found in `editor.h`, suggests that log messages are funneled through the main editor class, which then likely utilizes this logging component to output information, possibly to the Log Window or a file. This is invaluable for debugging and monitoring the application's behavior.</p>
+    <h2>Key Interactions</h2>
+
+    <script type="module">
+        mermaid.initialize({ startOnLoad: true });
+    </script>
+</body>
+</html>
