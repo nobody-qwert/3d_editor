@@ -124,9 +124,34 @@ classDiagram
     <h2>Logging</h2>
     <p>The Logging component (`log.h`, `log.cpp`) offers a simple mechanism for recording application events, status messages, warnings, or errors. The `g_editor.PrintLog()` function, found in `editor.h`, suggests that log messages are funneled through the main editor class, which then likely utilizes this logging component to output information, possibly to the Log Window or a file. This is invaluable for debugging and monitoring the application's behavior.</p>
     <h2>Key Interactions</h2>
+    <p>This section illustrates a typical workflow within the 3D Model Editor, showing how various components interact to process user input, modify the 3D scene, and update the display.</p>
+    <h3>Example: Modifying an Object</h3>
+    <pre class="mermaid">
+sequenceDiagram
+    participant User
+    participant Windowing_System as WinSys
+    participant Core_Editor as Editor
+    participant Target_Object as Object
+    participant OpenGL_Rendering as Renderer
+
+    User->>WinSys: Mouse Click/Drag
+    WinSys->>Editor: Forward Input Event (e.g., WM_LBUTTONDOWN, WM_MOUSEMOVE)
+    Editor->>Editor: Determine Action (e.g., Select Object, Start Drag)
+    Editor->>Target_Object: Apply Transformation (e.g., new position)
+    Target_Object->>Target_Object: Update Internal State
+    Editor->>Renderer: Request Scene Update for relevant views
+    Renderer->>WinSys: Redraw Projection Window
+    Renderer->>WinSys: Redraw Model Window
+    WinSys-->>User: Display Updated Views
+    </pre>
 
     <script type="module">
-        mermaid.initialize({ startOnLoad: true });
-    </script>
+     import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.js';
+     document.addEventListener('DOMContentLoaded', function () {
+       mermaid.initialize({ startOnLoad: true });
+       // If diagrams still don't render, an explicit mermaid.run() call might be needed here.
+       // For example: mermaid.run({ nodes: document.querySelectorAll('.mermaid') });
+     });
+   </script>
 </body>
 </html>
