@@ -20,11 +20,13 @@ set(SOURCES
     texturemanager.cpp
     windowsistem.cpp
     jpeg_wrapper.cpp
+    jpeg_compat.c
 )
 
 # Add header files
 set(HEADERS
     3Dmath.h
+    compat.h
     editor.h
     glutils.h
     glwindow.h
@@ -35,6 +37,7 @@ set(HEADERS
     texturemanager.h
     windowsistem.h
     Glext.h
+    jpeglib.h
 )
 
 # Add resource files
@@ -49,38 +52,67 @@ add_executable(3DEditor WIN32 ${SOURCES} ${HEADERS} ${RESOURCES})
 find_package(OpenGL REQUIRED)
 
 # Include directories
-target_include_directories(3DEditor PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(3DEditor PRIVATE 
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${OPENGL_INCLUDE_DIRS}
+)
 
 # Link libraries
 target_link_libraries(3DEditor PRIVATE 
     ${OPENGL_LIBRARIES}
-    ${CMAKE_CURRENT_SOURCE_DIR}/jpeg.lib
+    opengl32
+    glu32
+    user32
+    gdi32
+    shell32
+    comdlg32
+    advapi32
+    ole32
+    oleaut32
+    uuid
+    comctl32
 )
 
-# Add Windows-specific libraries
+# Add Windows-specific libraries and settings
 if(WIN32)
-    target_link_libraries(3DEditor PRIVATE
-        opengl32
-        glu32
-        user32
-        gdi32
-        shell32
-        comdlg32
-        advapi32
-        ole32
-        oleaut32
-        uuid
-        odbc32
-        odbccp32
-        comctl32
+    # Add preprocessor definitions
+    target_compile_definitions(3DEditor PRIVATE
+        WIN32
+        _WINDOWS
+        _CRT_SECURE_NO_WARNINGS
+        _CRT_NONSTDC_NO_DEPRECATE
+        NOMINMAX
     )
     
-# Add legacy stdio definitions for older libraries like jpeg.lib
-if(MSVC)
-    target_link_libraries(3DEditor PRIVATE legacy_stdio_definitions)
-    # Add preprocessor definition to handle __iob symbol
-    target_compile_definitions(3DEditor PRIVATE _CRT_SECURE_NO_WARNINGS)
-endif()
+    # Set compiler-specific options
+    if(MSVC)
+        # Visual Studio specific options
+        target_compile_options(3DEditor PRIVATE 
+            /W3
+            /wd4996  # Disable deprecation warnings
+            /wd4244  # Disable conversion warnings
+            /wd4305  # Disable truncation warnings
+        )
+        
+        # Use the MultiThreaded DLL runtime library
+        set_property(TARGET 3DEditor PROPERTY
+            MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+            
+        # Link with legacy stdio definitions for compatibility
+        target_link_libraries(3DEditor PRIVATE legacy_stdio_definitions)
+        
+        # Disable SAFESEH for compatibility with old libraries
+        set_target_properties(3DEditor PROPERTIES
+            LINK_FLAGS "/SAFESEH:NO"
+        )
+        
+        # Don't link with the old JPEG library - we'll use our BMP loader instead
+        # The old jpeg.lib is incompatible with modern MSVC
+        
+    else()
+        # GCC/MinGW specific options
+        target_compile_options(3DEditor PRIVATE -Wall -Wno-deprecated-declarations)
+    endif()
 endif()
 
 # Copy required files to build directory
@@ -96,26 +128,18 @@ set_target_properties(3DEditor PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
-# Add compile definitions
-target_compile_definitions(3DEditor PRIVATE
-    WIN32
-    _WINDOWS
+# Create textures directory in output
+add_custom_command(TARGET 3DEditor POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory
+        $<TARGET_FILE_DIR:3DEditor>/textures
 )
 
-# Set compiler-specific options
+# Print build information
+message(STATUS "Building 3DEditor for Windows")
+message(STATUS "OpenGL libraries: ${OPENGL_LIBRARIES}")
+message(STATUS "Note: Using built-in BMP loader instead of old JPEG library")
 if(MSVC)
-    # Visual Studio specific options
-    target_compile_options(3DEditor PRIVATE /W3)
-    
-    # Disable SAFESEH to work with older libraries like jpeg.lib and force linking despite unresolved externals
-    set_target_properties(3DEditor PROPERTIES LINK_FLAGS "/SAFESEH:NO /NODEFAULTLIB:LIBC.lib /DEFAULTLIB:legacy_stdio_definitions.lib /FORCE:UNRESOLVED")
-    
-    # Use the MultiThreaded DLL runtime library
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MD")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MDd")
-    set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} /MD")
-    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /MD")
+    message(STATUS "Using MSVC compiler with SAFESEH disabled for compatibility")
 else()
-    # GCC/MinGW specific options
-    target_compile_options(3DEditor PRIVATE -Wall)
+    message(STATUS "Using ${CMAKE_CXX_COMPILER_ID} compiler")
 endif()

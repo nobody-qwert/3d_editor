@@ -109,6 +109,10 @@ private:
 	int			 m_WINDOW_WIDTH;
 	int			 m_WINDOW_HEIGHT;
 
+	// Static storage for return values to avoid returning local variables
+	static LPARAM m_sizeResult;
+	static LPARAM m_centerResult;
+
 	bool	CreateGLWindow(int style, OPENGLWNDPROC WndProc);
 	bool	SetupPixelFormat(HDC hDC);
 	

@@ -1,5 +1,8 @@
 #include "glwindow.h"
 
+// Define static members
+LPARAM GLWindow::m_sizeResult = 0;
+LPARAM GLWindow::m_centerResult = 0;
 
 void GLWindow::
 		AddChildWindows(HWND *hWnd, char **classnames, int count) {
@@ -143,8 +146,8 @@ void *GLWindow::
 			int width = rc.right - rc.left;
 			int height = rc.bottom - rc.top;
 
-			LPARAM res[1] = { MAKELPARAM(width, height) };
-			return (void *)(res);
+			m_sizeResult = MAKELPARAM(width, height);
+			return (void *)(&m_sizeResult);
 		}
 		case GI_CCENTER: {
 			int ID = param;
@@ -156,8 +159,8 @@ void *GLWindow::
 			int cx = (rc.right + rc.left)/2;
 			int cy = (rc.bottom + rc.top)/2;
 
-			LPARAM res[1] = { MAKELPARAM(cx, cy) };
-			return (void *)(res);
+			m_centerResult = MAKELPARAM(cx, cy);
+			return (void *)(&m_centerResult);
 		}
 		case GI_CMOUSESTRUCT: {
 			int ID = param;
@@ -299,14 +302,14 @@ void GLWindow::
 
 bool GLWindow::InitializeOpenGLType(int cID) {
 	if (m_chWnd[cID]==NULL) {
-		MessageBox(NULL, "The window doesn't exist!", "Error", MB_OK | MB_ICONEXCLAMATION); 
+		MessageBoxA(NULL, "The window doesn't exist!", "Error", MB_OK | MB_ICONEXCLAMATION); 
 		return false;
 	}
 	
 	m_chDC[cID] = GetDC(m_chWnd[cID]);
 
 	if (m_chDC[cID]==NULL) {
-		MessageBox(NULL, "Could not create DC!", "Error", MB_OK | MB_ICONEXCLAMATION); 
+		MessageBoxA(NULL, "Could not create DC!", "Error", MB_OK | MB_ICONEXCLAMATION); 
 		return false;
 	}
 
@@ -352,7 +355,7 @@ void GLWindow::
 
 	if(!EnumDisplaySettings(NULL,ENUM_CURRENT_SETTINGS,&dmSettings))
 	{
-		MessageBox(NULL, "Could Not Enum Display Settings", "Error", MB_OK);
+		MessageBoxA(NULL, "Could Not Enum Display Settings", "Error", MB_OK);
 		return;
 	}
 
@@ -366,7 +369,7 @@ void GLWindow::
 
 	if(result != DISP_CHANGE_SUCCESSFUL)
 	{
-		MessageBox(NULL, "Display Mode Not Compatible", "Error", MB_OK);
+		MessageBoxA(NULL, "Display Mode Not Compatible", "Error", MB_OK);
 		PostQuitMessage(0);
 	}
 }
@@ -375,9 +378,9 @@ void GLWindow::
 bool GLWindow::
 		CreateGLWindow(int style, OPENGLWNDPROC WndProc) {
 
-	WNDCLASSEX wc = {0};
+	WNDCLASSEXA wc = {0};
 	
-	wc.cbSize		 = sizeof(WNDCLASSEX);
+	wc.cbSize		 = sizeof(WNDCLASSEXA);
 	wc.style		 = CS_HREDRAW | CS_VREDRAW;
 	wc.lpfnWndProc	 = WndProc;
 	wc.hInstance	 = m_hInstance;
@@ -387,7 +390,7 @@ bool GLWindow::
 	wc.hbrBackground = (HBRUSH) (COLOR_WINDOWFRAME);
 	wc.lpszClassName = m_CLASSNAME;
 	
-	RegisterClassEx(&wc);
+	RegisterClassExA(&wc);
 
 	if(m_FullScreen)
 	{
@@ -411,7 +414,7 @@ bool GLWindow::
 
 	AdjustWindowRect(&r, style, m_MENU_ID==NOMENU ? false:true);
 
-	m_hWnd = CreateWindow(m_CLASSNAME,
+	m_hWnd = CreateWindowA(m_CLASSNAME,
 						  m_CLASSNAME,
 						  style,
 						  0,
@@ -457,13 +460,13 @@ bool GLWindow::
  
     if ( (pixelformat = ChoosePixelFormat(hDC, &pfd)) == FALSE ) 
     { 
-        MessageBox(NULL, "ChoosePixelFormat failed", "Error", MB_OK); 
+        MessageBoxA(NULL, "ChoosePixelFormat failed", "Error", MB_OK); 
         return false;
     } 
 	
     if (SetPixelFormat(hDC, pixelformat, &pfd) == FALSE) 
     { 
-        MessageBox(NULL, "SetPixelFormat failed", "Error", MB_OK); 
+        MessageBoxA(NULL, "SetPixelFormat failed", "Error", MB_OK); 
         return false;
     } 
  
@@ -509,7 +512,7 @@ void GLWindow::
 			ReleaseDC(m_chWnd[i], m_chDC[i]);
 
 
-		UnregisterClass(m_cCLASSNAMES[i], m_hInstance);
+		UnregisterClassA(m_cCLASSNAMES[i], m_hInstance);
 	}
 
 	

@@ -116,7 +116,7 @@ UINT FONT::
 
 	m_fontListID	= glGenLists(MAX_CHARS);
 
-	hFont = CreateFont(height,
+	hFont = CreateFontA(height,
 					   0,
 					   0,
 					   0,
@@ -194,21 +194,78 @@ void FONT::DestroyFont()
  *************************************************************************/
 
 
-
+// Simple BMP loader to replace auxDIBImageLoad
 AUX_RGBImageRec * LoadBMP(char *Filename) 
 {
 	if (!Filename) return NULL;
 
-	FILE *File=fopen(Filename,"r");
-
-	if (File) {
-		fclose(File);
-		return auxDIBImageLoad(Filename);
+	FILE *File = fopen(Filename, "rb");
+	if (!File) {
+		return NULL;
 	}
 
-	//log.Output("File not Found: %s", Filename);
+	// Read BMP header
+	unsigned char header[54];
+	if (fread(header, 1, 54, File) != 54) {
+		fclose(File);
+		return NULL;
+	}
 
-	return NULL;
+	// Check if it's a BMP file
+	if (header[0] != 'B' || header[1] != 'M') {
+		fclose(File);
+		return NULL;
+	}
+
+	// Get image info
+	int width = *(int*)&header[18];
+	int height = *(int*)&header[22];
+	int bitsPerPixel = *(short*)&header[28];
+
+	// Only support 24-bit BMPs
+	if (bitsPerPixel != 24) {
+		fclose(File);
+		return NULL;
+	}
+
+	// Calculate image size
+	int imageSize = width * height * 3;
+	
+	// Allocate memory for image
+	AUX_RGBImageRec *image = (AUX_RGBImageRec*)malloc(sizeof(AUX_RGBImageRec));
+	if (!image) {
+		fclose(File);
+		return NULL;
+	}
+
+	image->data = (unsigned char*)malloc(imageSize);
+	if (!image->data) {
+		free(image);
+		fclose(File);
+		return NULL;
+	}
+
+	image->sizeX = width;
+	image->sizeY = height;
+
+	// Read image data
+	if (fread(image->data, 1, imageSize, File) != imageSize) {
+		free(image->data);
+		free(image);
+		fclose(File);
+		return NULL;
+	}
+
+	fclose(File);
+
+	// Convert BGR to RGB
+	for (int i = 0; i < imageSize; i += 3) {
+		unsigned char temp = image->data[i];
+		image->data[i] = image->data[i + 2];
+		image->data[i + 2] = temp;
+	}
+
+	return image;
 }
 
 
@@ -219,16 +276,17 @@ bool LoadToOpenGL(char * fname, GLuint &ID, GLuint min, GLuint max)
 
 	glGenTextures(1, (GLuint *)(&ID));
 
-	if (TextureImage=LoadBMP(fname))
+	if (TextureImage = LoadBMP(fname))
 	{
 		glBindTexture(GL_TEXTURE_2D, (GLuint)ID);
 		glTexImage2D(GL_TEXTURE_2D, 0, 3, TextureImage->sizeX, TextureImage->sizeY, 0, GL_RGB, GL_UNSIGNED_BYTE, TextureImage->data);
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, GL_REPEAT); 
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, min);
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, max);
-	} else Status=false;
-	
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); 
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, max);
+	} else {
+		Status = false;
+	}
 	
 	if (TextureImage)
 	{

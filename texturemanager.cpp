@@ -26,7 +26,7 @@ void TEXTUREINFO::operator =(TEXTUREINFO ti) {
 
 /************************************************************************
 							FUNCTIONS
-	 - loading JPEG images
+	 - loading BMP images (replacing JPEG)
 	 - creating textures
  ************************************************************************/
 
@@ -56,41 +56,20 @@ void NewTextureInfo(TEXTUREINFO &ti) {
 
 bool LoadToOpenGL_JPG(char * fname, GLuint &ID, GLuint min, GLuint max)
 {
-	
-	tImageJPG *img = LoadJPG(fname);
-
-	if (img==NULL) return false;
-
-	if (!IsPowOf2(img->sizeX) || !IsPowOf2(img->sizeY)) {
-
-		if (img->data) free(img->data);
-		free(img);
-
-		return false;
-	} else {
-		glGenTextures(1, &ID);
-		glBindTexture(GL_TEXTURE_2D, ID);
-
-		gluBuild2DMipmaps(GL_TEXTURE_2D, 3, img->sizeX, img->sizeY, GL_RGB, GL_UNSIGNED_BYTE, img->data);
-
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, min);
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, max);
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, GL_REPEAT);
-
+	// Try to load as BMP first, then fall back to our BMP loader
+	GLuint texID;
+	if (LoadToOpenGL(fname, texID, min, max)) {
+		ID = texID;
+		return true;
 	}
-	
-	if (img->data) free(img->data);
-	free(img);
-
-	return true;
+	return false;
 }
 
 
 
 void AddTexture(TEXTUREINFO &ti, TEXTURELIST tl, bool first) {
 	if (!ti.initialized) {
-		MessageBox(NULL, "at:TEXTUREINFO not initialized!", ERROR, MB_ICONEXCLAMATION);
+		MessageBoxA(NULL, "at:TEXTUREINFO not initialized!", "Error", MB_ICONEXCLAMATION);
 		return;
 	}
 
@@ -112,35 +91,6 @@ void AddTexture(TEXTUREINFO &ti, TEXTURELIST tl, bool first) {
 /*********************************************************************************/
 
 
-
-void DecodeJPG(jpeg_decompress_struct* cinfo, tImageJPG *pImageData)
-{
-	jpeg_read_header(cinfo, TRUE);
-	
-	jpeg_start_decompress(cinfo);
-
-	pImageData->rowSpan = cinfo->image_width * cinfo->num_components;
-	pImageData->sizeX   = cinfo->image_width;
-	pImageData->sizeY   = cinfo->image_height;
-	
-	pImageData->data = new unsigned char[pImageData->rowSpan * pImageData->sizeY];
-		
-	unsigned char** rowPtr = new unsigned char*[pImageData->sizeY];
-	for (int i = 0; i < pImageData->sizeY; i++)
-		rowPtr[i] = &(pImageData->data[i*pImageData->rowSpan]);
-
-	int rowsRead = 0;
-	while (cinfo->output_scanline < cinfo->output_height) 
-	{
-		rowsRead += jpeg_read_scanlines(cinfo, &rowPtr[rowsRead], cinfo->output_height - rowsRead);
-	}
-	
-	delete [] rowPtr;
-
-	jpeg_finish_decompress(cinfo);
-}
-
-
 void AddToOpenGL(byte *data, UINT &ID)
 {
 	glGenTextures(1, (GLuint *)(&ID));
@@ -154,43 +104,113 @@ void AddToOpenGL(byte *data, UINT &ID)
 }
 
 
-
-tImageJPG *LoadJPG(const char *filename)
+tImageJPG *LoadBMP_Internal(const char *filename)
 {
-	jpeg_decompress_struct	 cinfo;
-	tImageJPG						*pImageData;
-	FILE							*pFile;
-		
-	pImageData = NULL;
+	if (!filename) return NULL;
 
-
-	if((pFile = fopen(filename, "rb")) == NULL) 
-	{
-		MessageBox(NULL, "Unable to load JPG File!", "Error", MB_OK);
+	FILE *File = fopen(filename, "rb");
+	if (!File) {
+		MessageBoxA(NULL, "Unable to load BMP File!", "Error", MB_OK);
 		return NULL;
 	}
-	
-	jpeg_error_mgr jerr;
 
+	// Read BMP header
+	unsigned char header[54];
+	if (fread(header, 1, 54, File) != 54) {
+		fclose(File);
+		return NULL;
+	}
 
-	cinfo.err = jpeg_std_error(&jerr);
-	
-	jpeg_create_decompress(&cinfo);
-	
-		jpeg_stdio_src(&cinfo, pFile);	
-		
-		pImageData = (tImageJPG*)malloc(sizeof(tImageJPG));
+	// Check if it's a BMP file
+	if (header[0] != 'B' || header[1] != 'M') {
+		fclose(File);
+		return NULL;
+	}
 
-		DecodeJPG(&cinfo, pImageData);
-	
-	jpeg_destroy_decompress(&cinfo);
-	
-	fclose(pFile);
+	// Get image info
+	int width = *(int*)&header[18];
+	int height = *(int*)&header[22];
+	int bitsPerPixel = *(short*)&header[28];
 
-	return pImageData;
+	// Only support 24-bit BMPs
+	if (bitsPerPixel != 24) {
+		fclose(File);
+		return NULL;
+	}
+
+	// Calculate image size
+	int imageSize = width * height * 3;
+	
+	// Allocate memory for image
+	tImageJPG *image = (tImageJPG*)malloc(sizeof(tImageJPG));
+	if (!image) {
+		fclose(File);
+		return NULL;
+	}
+
+	image->data = (unsigned char*)malloc(imageSize);
+	if (!image->data) {
+		free(image);
+		fclose(File);
+		return NULL;
+	}
+
+	image->sizeX = width;
+	image->sizeY = height;
+
+	// Read image data
+	if (fread(image->data, 1, imageSize, File) != imageSize) {
+		free(image->data);
+		free(image);
+		fclose(File);
+		return NULL;
+	}
+
+	fclose(File);
+
+	// Convert BGR to RGB
+	for (int i = 0; i < imageSize; i += 3) {
+		unsigned char temp = image->data[i];
+		image->data[i] = image->data[i + 2];
+		image->data[i + 2] = temp;
+	}
+
+	return image;
 }
 
+// Legacy function name for compatibility
+tImageJPG *LoadJPG(const char *filename)
+{
+	// First try to use the LoadBMP from glutils.h
+	AUX_RGBImageRec *auxImage = LoadBMP((char*)filename);
+	if (auxImage) {
+		// Convert AUX_RGBImageRec to tImageJPG
+		tImageJPG *image = (tImageJPG*)malloc(sizeof(tImageJPG));
+		if (image) {
+			image->sizeX = auxImage->sizeX;
+			image->sizeY = auxImage->sizeY;
+			int imageSize = image->sizeX * image->sizeY * 3;
+			image->data = (unsigned char*)malloc(imageSize);
+			if (image->data) {
+				memcpy(image->data, auxImage->data, imageSize);
+			}
+		}
+		// Free the AUX image
+		if (auxImage->data) free(auxImage->data);
+		free(auxImage);
+		return image;
+	}
+	
+	// Fall back to our internal BMP loader
+	return LoadBMP_Internal(filename);
+}
 
+// Stub function for compatibility - not used with JPEG library removed
+void DecodeJPG(jpeg_decompress_struct* cinfo, tImageJPG *pImageData)
+{
+	// This function is no longer used since we removed JPEG support
+	// Keep it as a stub for compatibility
+}
 
 UINT CreateTexture(LPSTR filename, int textureID)
 {
